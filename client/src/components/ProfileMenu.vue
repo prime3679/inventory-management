@@ -124,18 +124,19 @@ const handleLogout = () => {
   display: flex;
   align-items: center;
   gap: 0.625rem;
-  padding: 0.5rem 0.875rem;
-  background: white;
-  border: 1px solid #e2e8f0;
+  padding: 0.5rem 0.625rem;
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: inherit;
+  width: 100%;
 }
 
 .profile-button:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
+  background: var(--color-slate-100, #f1f5f9);
+  border-color: var(--color-border, #e2e8f0);
 }
 
 .avatar {
@@ -169,8 +170,8 @@ const handleLogout = () => {
 
 .dropdown-menu {
   position: absolute;
-  top: calc(100% + 0.5rem);
-  right: 0;
+  bottom: calc(100% + 0.5rem);
+  left: 0;
   min-width: 280px;
   background: white;
   border: 1px solid #e2e8f0;

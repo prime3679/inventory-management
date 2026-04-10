@@ -304,6 +304,61 @@ def get_monthly_trends():
     result.sort(key=lambda x: x['month'])
     return result
 
+# In-memory task store
+tasks = []
+task_counter = 1
+
+class Task(BaseModel):
+    id: str
+    title: str
+    priority: str = "medium"
+    dueDate: Optional[str] = None
+    status: str = "pending"
+
+class CreateTaskRequest(BaseModel):
+    title: str
+    priority: str = "medium"
+    dueDate: Optional[str] = None
+
+@app.get("/api/tasks", response_model=List[Task])
+def get_tasks():
+    """Get all tasks"""
+    return tasks
+
+@app.post("/api/tasks", response_model=Task)
+def create_task(task_data: CreateTaskRequest):
+    """Create a new task"""
+    global task_counter
+    task = {
+        "id": f"api-task-{task_counter}",
+        "title": task_data.title,
+        "priority": task_data.priority,
+        "dueDate": task_data.dueDate,
+        "status": "pending"
+    }
+    task_counter += 1
+    tasks.insert(0, task)
+    return task
+
+@app.delete("/api/tasks/{task_id}")
+def delete_task(task_id: str):
+    """Delete a task"""
+    global tasks
+    original_len = len(tasks)
+    tasks = [t for t in tasks if t["id"] != task_id]
+    if len(tasks) == original_len:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return {"message": "Task deleted"}
+
+@app.patch("/api/tasks/{task_id}", response_model=Task)
+def toggle_task(task_id: str):
+    """Toggle task status between pending and completed"""
+    task = next((t for t in tasks if t["id"] == task_id), None)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    task["status"] = "completed" if task["status"] == "pending" else "pending"
+    return task
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
