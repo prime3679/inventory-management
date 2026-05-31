@@ -6,8 +6,12 @@ export default {
     orders: '注文',
     finance: '財務',
     demandForecast: '需要予測',
+    reports: 'レポート',
     companyName: '触媒コンポーネンツ',
-    subtitle: '在庫管理システム'
+    subtitle: '在庫管理システム',
+    collapse: '折りたたむ',
+    collapseSidebar: 'サイドバーを折りたたむ',
+    expandSidebar: 'サイドバーを展開'
   },
 
   // Dashboard
@@ -218,6 +222,7 @@ export default {
 
   // Priority
   priority: {
+    label: '優先度',
     high: '高',
     medium: '中',
     low: '低'
@@ -309,6 +314,52 @@ export default {
     english: 'English',
     japanese: '日本語',
     selectLanguage: '言語を選択'
+  },
+
+  // Reports
+  reports: {
+    title: '業績レポート',
+    subtitle: '四半期業績指標と月次トレンドを表示',
+    loading: 'レポートを読み込み中...',
+    quarterlyPerformance: '四半期業績',
+    monthlyRevenueTrend: '月次売上トレンド',
+    monthOverMonth: '前月比分析',
+    quarter: '四半期',
+    totalOrders: '総注文数',
+    totalRevenue: '総売上',
+    avgOrderValue: '平均注文額',
+    fulfillmentRate: '履行率',
+    month: '月',
+    orders: '注文',
+    revenue: '売上',
+    change: '変動',
+    growthRate: '成長率',
+    totalRevenueYTD: '総売上（年初来）',
+    avgMonthlyRevenue: '平均月次売上',
+    totalOrdersYTD: '総注文数（年初来）',
+    bestQuarter: '最高業績四半期'
+  },
+
+  // Backlog
+  backlog: {
+    title: 'バックログ管理',
+    subtitle: '在庫不足の追跡と解決',
+    loading: 'バックログを読み込み中...',
+    highPriority: '高優先度',
+    mediumPriority: '中優先度',
+    lowPriority: '低優先度',
+    totalItems: 'バックログ合計',
+    cardTitle: 'バックログ項目',
+    noItems: 'バックログなし - 全注文の出荷が可能です！',
+    orderId: '注文ID',
+    sku: 'SKU',
+    itemName: '品名',
+    quantityNeeded: '必要数量',
+    quantityAvailable: '在庫数量',
+    shortage: '不足',
+    daysDelayed: '遅延日数',
+    unitsShort: '個不足',
+    days: '日'
   },
 
   // Common

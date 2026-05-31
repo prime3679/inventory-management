@@ -1,6 +1,7 @@
 <template>
   <div class="language-switcher">
     <button
+      ref="buttonRef"
       class="language-button"
       @click="toggleDropdown"
       @blur="handleBlur"
@@ -30,7 +31,7 @@
       </svg>
     </button>
 
-    <div v-if="isDropdownOpen" class="dropdown-menu">
+    <div v-if="isDropdownOpen" class="dropdown-menu" :style="dropdownStyle">
       <button
         v-for="locale in availableLocales"
         :key="locale"
@@ -55,12 +56,14 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, nextTick } from 'vue'
 import { useI18n } from '../composables/useI18n'
 
 const { currentLocale, setLocale, availableLocales, localeName } = useI18n()
 
 const isDropdownOpen = ref(false)
+const dropdownStyle = ref({})
+const buttonRef = ref(null)
 
 const languageNames = {
   en: 'English',
@@ -71,12 +74,21 @@ const getLanguageName = (locale) => {
   return languageNames[locale] || locale
 }
 
-const toggleDropdown = () => {
+const toggleDropdown = async () => {
   isDropdownOpen.value = !isDropdownOpen.value
+  if (isDropdownOpen.value) {
+    await nextTick()
+    const rect = buttonRef.value.getBoundingClientRect()
+    dropdownStyle.value = {
+      position: 'fixed',
+      bottom: (window.innerHeight - rect.top + 8) + 'px',
+      left: rect.left + 'px',
+      minWidth: '160px'
+    }
+  }
 }
 
 const handleBlur = () => {
-  // Delay to allow mousedown events on dropdown items to fire first
   setTimeout(() => {
     isDropdownOpen.value = false
   }, 200)
@@ -97,20 +109,21 @@ const selectLanguage = (locale) => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 0.875rem;
-  background: white;
-  border: 1px solid #e2e8f0;
+  padding: 0.5rem 0.625rem;
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: inherit;
   font-size: 0.875rem;
   color: #334155;
+  width: 100%;
 }
 
 .language-button:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
+  background: var(--color-slate-100, #f1f5f9);
+  border-color: var(--color-border, #e2e8f0);
 }
 
 .globe-icon {
@@ -133,15 +146,13 @@ const selectLanguage = (locale) => {
 }
 
 .dropdown-menu {
-  position: absolute;
-  top: calc(100% + 0.5rem);
-  right: 0;
+  position: fixed;
   min-width: 160px;
   background: white;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
+  z-index: 9999;
   overflow: hidden;
 }
 

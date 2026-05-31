@@ -80,11 +80,10 @@
         <div class="chart-container">
           <div class="bar-chart">
             <div class="y-axis">
-              <span>{{ currencySymbol }}25K</span>
-              <span>{{ currencySymbol }}20K</span>
-              <span>{{ currencySymbol }}15K</span>
-              <span>{{ currencySymbol }}10K</span>
-              <span>{{ currencySymbol }}5K</span>
+              <span>{{ currencySymbol }}{{ maxStack }}K</span>
+              <span>{{ currencySymbol }}{{ Math.round(maxStack * 0.75) }}K</span>
+              <span>{{ currencySymbol }}{{ Math.round(maxStack * 0.5) }}K</span>
+              <span>{{ currencySymbol }}{{ Math.round(maxStack * 0.25) }}K</span>
               <span>{{ currencySymbol }}0</span>
             </div>
             <div class="chart-area">
@@ -199,7 +198,7 @@ export default {
     const selectedCostData = ref(null)
 
     // Use shared filters
-    const { selectedPeriod, getCurrentFilters } = useFilters()
+    const { selectedPeriod, selectedLocation, selectedCategory, selectedStatus, getCurrentFilters } = useFilters()
 
     // Monthly spending chart always shows all months (not filtered)
     const monthlySpending = computed(() => {
@@ -232,7 +231,7 @@ export default {
       }
       // Filter transactions by selected month
       return allTransactions.value.filter(t => {
-        const transactionMonth = new Date(t.date).toISOString().slice(0, 7)
+        const transactionMonth = t.date.slice(0, 7)
         return transactionMonth === selectedPeriod.value
       })
     })
@@ -270,7 +269,7 @@ export default {
 
       // Filter orders by selected month
       return allOrders.value.filter(order => {
-        const orderMonth = new Date(order.order_date).toISOString().slice(0, 7)
+        const orderMonth = order.order_date.slice(0, 7)
         return orderMonth === selectedPeriod.value
       })
     })
@@ -347,6 +346,15 @@ export default {
       return Math.ceil(max / 1000) // Return in K
     })
 
+    // Max value for stacked cost-flow chart scaling
+    const maxStack = computed(() => {
+      const max = Math.max(
+        0,
+        ...monthlySpending.value.map(m => m.procurement + m.operational + m.labor + m.overhead)
+      )
+      return Math.ceil(max / 1000) // Return in K
+    })
+
     const loadData = async () => {
       try {
         loading.value = true
@@ -355,7 +363,7 @@ export default {
           api.getMonthlySpending(),
           api.getCategorySpending(),
           api.getTransactions(),
-          api.getOrders()
+          api.getOrders(getCurrentFilters())
         ])
 
         summaryData.value = summaryRes
@@ -370,9 +378,9 @@ export default {
       }
     }
 
-    // Watch for period filter changes
-    watch([selectedPeriod], () => {
-      // Data will automatically update via computed properties
+    // Watch for filter changes and reload data
+    watch([selectedPeriod, selectedLocation, selectedCategory, selectedStatus], () => {
+      loadData()
     })
 
     const formatCurrency = (value) => {
@@ -384,7 +392,8 @@ export default {
     })
 
     const getBarHeight = (value) => {
-      const maxValue = 25000
+      const maxValue = maxStack.value * 1000
+      if (maxValue === 0) return 0
       return (value / maxValue) * 100
     }
 
@@ -448,8 +457,7 @@ export default {
     }
 
     const handleTransactionClick = (transaction) => {
-      console.log('Transaction clicked:', transaction)
-      alert(`Transaction Details:\n\nID: ${transaction.id}\nDescription: ${transaction.description}\nVendor: ${transaction.vendor}\nDate: ${formatDateShort(transaction.date)}\nAmount: $${transaction.amount.toLocaleString()}`)
+      // Transaction row clicked - reserved for future detail view
     }
 
     const showCostDetail = (monthData) => {
@@ -473,6 +481,7 @@ export default {
       profitMargin,
       monthlyRevenue,
       maxRevenueValue,
+      maxStack,
       formatCurrency,
       currencySymbol,
       getBarHeight,

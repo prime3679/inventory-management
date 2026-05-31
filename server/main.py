@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
 from pydantic import BaseModel
-from mock_data import inventory_items, orders, demand_forecasts, backlog_items, spending_summary, monthly_spending, category_spending, recent_transactions, purchase_orders
+from mock_data import inventory_items, orders, demand_forecasts, backlog_items, spending_summary, monthly_spending, category_spending, recent_transactions
 
 app = FastAPI(title="Factory Inventory Management System")
 
@@ -45,6 +45,13 @@ def apply_filters(items: list, warehouse: Optional[str] = None, category: Option
         filtered = [item for item in filtered if item.get('status', '').lower() == status.lower()]
 
     return filtered
+
+def get_quarter(month: str) -> Optional[str]:
+    """Return the quarter label for a date string by scanning QUARTER_MAP, or None if no match"""
+    for quarter, months in QUARTER_MAP.items():
+        if any(m in month for m in months):
+            return quarter
+    return None
 
 # CORS middleware
 app.add_middleware(
@@ -99,26 +106,6 @@ class BacklogItem(BaseModel):
     quantity_available: int
     days_delayed: int
     priority: str
-    has_purchase_order: Optional[bool] = False
-
-class PurchaseOrder(BaseModel):
-    id: str
-    backlog_item_id: str
-    supplier_name: str
-    quantity: int
-    unit_cost: float
-    expected_delivery_date: str
-    status: str
-    created_date: str
-    notes: Optional[str] = None
-
-class CreatePurchaseOrderRequest(BaseModel):
-    backlog_item_id: str
-    supplier_name: str
-    quantity: int
-    unit_cost: float
-    expected_delivery_date: str
-    notes: Optional[str] = None
 
 # API endpoints
 @app.get("/")
@@ -168,16 +155,8 @@ def get_demand_forecasts():
 
 @app.get("/api/backlog", response_model=List[BacklogItem])
 def get_backlog():
-    """Get backlog items with purchase order status"""
-    # Add has_purchase_order flag to each backlog item
-    result = []
-    for item in backlog_items:
-        item_dict = dict(item)
-        # Check if this backlog item has a purchase order
-        has_po = any(po["backlog_item_id"] == item["id"] for po in purchase_orders)
-        item_dict["has_purchase_order"] = has_po
-        result.append(item_dict)
-    return result
+    """Get backlog items"""
+    return backlog_items
 
 @app.get("/api/dashboard/summary")
 def get_dashboard_summary(
@@ -236,15 +215,8 @@ def get_quarterly_reports():
     for order in orders:
         order_date = order.get('order_date', '')
         # Determine quarter
-        if '2025-01' in order_date or '2025-02' in order_date or '2025-03' in order_date:
-            quarter = 'Q1-2025'
-        elif '2025-04' in order_date or '2025-05' in order_date or '2025-06' in order_date:
-            quarter = 'Q2-2025'
-        elif '2025-07' in order_date or '2025-08' in order_date or '2025-09' in order_date:
-            quarter = 'Q3-2025'
-        elif '2025-10' in order_date or '2025-11' in order_date or '2025-12' in order_date:
-            quarter = 'Q4-2025'
-        else:
+        quarter = get_quarter(order_date)
+        if quarter is None:
             continue
 
         if quarter not in quarters:
@@ -303,6 +275,61 @@ def get_monthly_trends():
     result = list(months.values())
     result.sort(key=lambda x: x['month'])
     return result
+
+# In-memory task store
+tasks = []
+task_counter = 1
+
+class Task(BaseModel):
+    id: str
+    title: str
+    priority: str = "medium"
+    dueDate: Optional[str] = None
+    status: str = "pending"
+
+class CreateTaskRequest(BaseModel):
+    title: str
+    priority: str = "medium"
+    dueDate: Optional[str] = None
+
+@app.get("/api/tasks", response_model=List[Task])
+def get_tasks():
+    """Get all tasks"""
+    return tasks
+
+@app.post("/api/tasks", response_model=Task)
+def create_task(task_data: CreateTaskRequest):
+    """Create a new task"""
+    global task_counter
+    task = {
+        "id": f"api-task-{task_counter}",
+        "title": task_data.title,
+        "priority": task_data.priority,
+        "dueDate": task_data.dueDate,
+        "status": "pending"
+    }
+    task_counter += 1
+    tasks.insert(0, task)
+    return task
+
+@app.delete("/api/tasks/{task_id}")
+def delete_task(task_id: str):
+    """Delete a task"""
+    global tasks
+    original_len = len(tasks)
+    tasks = [t for t in tasks if t["id"] != task_id]
+    if len(tasks) == original_len:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return {"message": "Task deleted"}
+
+@app.patch("/api/tasks/{task_id}", response_model=Task)
+def toggle_task(task_id: str):
+    """Toggle task status between pending and completed"""
+    task = next((t for t in tasks if t["id"] == task_id), None)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    task["status"] = "completed" if task["status"] == "pending" else "pending"
+    return task
 
 if __name__ == "__main__":
     import uvicorn
