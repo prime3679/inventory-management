@@ -47,9 +47,9 @@
         @show-tasks="$emit('show-tasks')"
       />
       <div class="sidebar-divider"></div>
-      <button class="collapse-btn" @click="toggle" :title="collapsed ? 'Expand sidebar' : 'Collapse sidebar'">
+      <button class="collapse-btn" @click="toggle" :title="collapsed ? t('nav.expandSidebar') : t('nav.collapseSidebar')">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" :class="{ flipped: collapsed }"><polyline points="15 18 9 12 15 6"/></svg>
-        <span class="nav-label">Collapse</span>
+        <span class="nav-label">{{ t('nav.collapse') }}</span>
       </button>
     </div>
   </aside>

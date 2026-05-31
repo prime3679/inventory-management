@@ -125,17 +125,15 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { api } from '../api'
 import { useI18n } from '../composables/useI18n'
-import { useFilters } from '../composables/useFilters'
 import { formatCurrency as formatCurrencyUtil } from '../utils/currency'
 
 export default {
   name: 'Reports',
   setup() {
     const { t, currentCurrency } = useI18n()
-    const { selectedPeriod, selectedLocation, selectedCategory, selectedStatus } = useFilters()
 
     const loading = ref(true)
     const error = ref(null)
@@ -169,11 +167,6 @@ export default {
       } finally {
         loading.value = false
       }
-    }
-
-    const formatNumber = (num) => {
-      if (num == null) return '0'
-      return num.toLocaleString()
     }
 
     const formatCurrency = (value) => {
@@ -218,16 +211,12 @@ export default {
       return (rate > 0 ? '+' : '') + rate.toFixed(1) + '%'
     }
 
-    watch([selectedPeriod, selectedLocation, selectedCategory, selectedStatus], () => {
-      loadData()
-    })
-
     onMounted(loadData)
 
     return {
       t, loading, error, quarterlyData, monthlyData,
       totalRevenue, avgMonthlyRevenue, totalOrders, bestQuarter,
-      formatNumber, formatCurrency, formatMonth, getBarHeight, getFulfillmentClass,
+      formatCurrency, formatMonth, getBarHeight, getFulfillmentClass,
       getChangeValue, getChangeClass, getGrowthRate
     }
   }

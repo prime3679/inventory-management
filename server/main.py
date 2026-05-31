@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
 from pydantic import BaseModel
-from mock_data import inventory_items, orders, demand_forecasts, backlog_items, spending_summary, monthly_spending, category_spending, recent_transactions, purchase_orders
+from mock_data import inventory_items, orders, demand_forecasts, backlog_items, spending_summary, monthly_spending, category_spending, recent_transactions
 
 app = FastAPI(title="Factory Inventory Management System")
 
@@ -106,26 +106,6 @@ class BacklogItem(BaseModel):
     quantity_available: int
     days_delayed: int
     priority: str
-    has_purchase_order: Optional[bool] = False
-
-class PurchaseOrder(BaseModel):
-    id: str
-    backlog_item_id: str
-    supplier_name: str
-    quantity: int
-    unit_cost: float
-    expected_delivery_date: str
-    status: str
-    created_date: str
-    notes: Optional[str] = None
-
-class CreatePurchaseOrderRequest(BaseModel):
-    backlog_item_id: str
-    supplier_name: str
-    quantity: int
-    unit_cost: float
-    expected_delivery_date: str
-    notes: Optional[str] = None
 
 # API endpoints
 @app.get("/")
@@ -175,16 +155,8 @@ def get_demand_forecasts():
 
 @app.get("/api/backlog", response_model=List[BacklogItem])
 def get_backlog():
-    """Get backlog items with purchase order status"""
-    # Add has_purchase_order flag to each backlog item
-    result = []
-    for item in backlog_items:
-        item_dict = dict(item)
-        # Check if this backlog item has a purchase order
-        has_po = any(po["backlog_item_id"] == item["id"] for po in purchase_orders)
-        item_dict["has_purchase_order"] = has_po
-        result.append(item_dict)
-    return result
+    """Get backlog items"""
+    return backlog_items
 
 @app.get("/api/dashboard/summary")
 def get_dashboard_summary(

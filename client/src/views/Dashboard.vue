@@ -288,7 +288,7 @@ export default {
     BacklogDetailModal,
   },
   setup() {
-    const { t, currentCurrency, translateProductName, translateWarehouse } = useI18n()
+    const { t, currentCurrency, translateProductName, translateWarehouse, translateCategory } = useI18n()
     const loading = ref(true)
     const error = ref(null)
     const summary = ref({})
@@ -533,17 +533,6 @@ export default {
       if (level === 'In Stock') return 'success'
       if (level === 'Low Stock') return 'warning'
       return 'danger'
-    }
-
-    const translateCategory = (category) => {
-      const categoryMap = {
-        'Circuit Boards': t('categories.circuitBoards'),
-        'Sensors': t('categories.sensors'),
-        'Actuators': t('categories.actuators'),
-        'Controllers': t('categories.controllers'),
-        'Power Supplies': t('categories.powerSupplies')
-      }
-      return categoryMap[category] || category
     }
 
     const translateStockLevel = (stockLevel) => {
