@@ -46,6 +46,13 @@ def apply_filters(items: list, warehouse: Optional[str] = None, category: Option
 
     return filtered
 
+def get_quarter(month: str) -> Optional[str]:
+    """Return the quarter label for a date string by scanning QUARTER_MAP, or None if no match"""
+    for quarter, months in QUARTER_MAP.items():
+        if any(m in month for m in months):
+            return quarter
+    return None
+
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -236,15 +243,8 @@ def get_quarterly_reports():
     for order in orders:
         order_date = order.get('order_date', '')
         # Determine quarter
-        if '2025-01' in order_date or '2025-02' in order_date or '2025-03' in order_date:
-            quarter = 'Q1-2025'
-        elif '2025-04' in order_date or '2025-05' in order_date or '2025-06' in order_date:
-            quarter = 'Q2-2025'
-        elif '2025-07' in order_date or '2025-08' in order_date or '2025-09' in order_date:
-            quarter = 'Q3-2025'
-        elif '2025-10' in order_date or '2025-11' in order_date or '2025-12' in order_date:
-            quarter = 'Q4-2025'
-        else:
+        quarter = get_quarter(order_date)
+        if quarter is None:
             continue
 
         if quarter not in quarters:

@@ -30,9 +30,9 @@
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
           <span class="nav-label">{{ t('nav.demandForecast') }}</span>
         </router-link>
-        <router-link to="/reports" :class="{ active: $route.path === '/reports' }" :title="collapsed ? 'Reports' : ''">
+        <router-link to="/reports" :class="{ active: $route.path === '/reports' }" :title="collapsed ? t('nav.reports') : ''">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-          <span class="nav-label">Reports</span>
+          <span class="nav-label">{{ t('nav.reports') }}</span>
         </router-link>
       </nav>
     </div>
@@ -98,8 +98,7 @@ export default {
   flex-direction: column;
   justify-content: space-between;
   z-index: var(--z-sidebar, 50);
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: visible;
   transition: width 0.2s ease;
 }
 
@@ -220,6 +219,8 @@ export default {
 .sidebar-bottom {
   padding: 0.75rem;
   border-top: 1px solid var(--color-border, #e2e8f0);
+  position: relative;
+  z-index: 10;
 }
 
 .collapsed .sidebar-bottom {
